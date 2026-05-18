@@ -1,32 +1,51 @@
 # Surfin
 
-An AI-driven project focused on Machine Learning, Data Analytics, and intelligent digital experiences combined with creative UI/UX and modern web development.
+Surfin is an AI-driven web platform focused on Machine Learning, Data Analytics, and intelligent digital experiences combined with modern UI/UX and full-stack web development.
 
-# Focus Areas
+# Core Focus
 - Artificial Intelligence & Machine Learning
-- Data Analytics & Visualization
+- Data Analytics & Smart Processing
 - Interactive UI/UX Design
-- Modern Frontend Development
-- Creative Digital Experiences
+- Full Stack Web Development
+- Intelligent User Experience
 
 # Features
-- Responsive and modern interface
-- Interactive user experience
-- AI-inspired workflow and design
-- Smooth animations and clean layouts
-- Scalable project structure
+- Responsive and interactive frontend
+- AI-integrated backend workflow
+- ML-based processing pipeline
+- Dynamic API handling
+- Structured data management
+- Modern and scalable architecture
 
 # Tech Stack
-- Python
-- Machine Learning Concepts
-- Data Analytics
-- HTML
-- CSS
+
+### Backend
+- Flask (Python)
+
+# Frontend
+- HTML5
+- CSS3
 - JavaScript
-- React
+
+# API Handling
+- Flask-CORS
+
+# Database / Storage
+- SQLite
+- JSON File Storage
+
+# Machine Learning Integration
+- Custom Python ML Pipeline
+
+# Templating Engine
+- Jinja2 (Flask Templates)
+
+# Version Control
+- Git
+- GitHub
 
 # About
-Surfin was created as a portfolio and experimental project to combine AI/ML concepts, data-focused thinking, and visually engaging frontend experiences into one modern platform.
+Surfin was built as a modern AI-focused project that combines machine learning concepts, backend engineering, frontend development, and clean user experience into a single intelligent platform.
 
-#Author
+# Author
 Pranjali Shukla
