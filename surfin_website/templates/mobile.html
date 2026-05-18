@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surfin' — Feel it. Name it. Ride it.</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-phone: #f0f7ff; --white: #ffffff; --teal: #3ecfb2; --teal-dark: #2aa897;
+  --teal-light: #e0f9f5; --blue: #4a9eff; --text-phone: #2d3748;
+  --muted: #718096; --light: #a0aec0; --border-phone: #e2e8f0;
+}
+
+html, body {
+  height: 100%; background: #f0f4f8;
+  font-family: 'Nunito', sans-serif; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.phone {
+  width: 390px; height: 844px;
+  background: #ffffff; border-radius: 44px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.25), 0 0 0 2px rgba(255,255,255,0.3), 0 0 0 10px #1a1f2e;
+  overflow: hidden; position: relative;
+}
+
+* { box-sizing: border-box; }
+.screen { position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; pointer-events:none; transform:translateX(30px); transition:all 0.4s cubic-bezier(0.34,1.2,0.64,1); overflow:hidden; }
+.screen.active { opacity:1; pointer-events:all; transform:translateX(0); }
+.screen.exit { opacity:0; transform:translateX(-30px); }
+.bubbles-bg { position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.bg-b { position:absolute; border-radius:50%; animation:floatUp linear infinite; opacity:0; }
+@keyframes floatUp { 0%{opacity:0;transform:translateY(120%) scale(0.6)} 15%{opacity:0.25} 85%{opacity:0.15} 100%{opacity:0;transform:translateY(-20%) scale(0.9)} }
+.status-bar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; font-size:0.75rem; font-weight:700; color:var(--text-phone); position:relative; z-index:10; flex-shrink:0; }
+.status-bar .time { font-size:0.9rem; font-weight:800; }
+.status-icons { display:flex; gap:5px; align-items:center; }
+.sos-btn { position:absolute; bottom:24px; right:20px; z-index:100; width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#ff6b6b,#ee5a24); color:white; border:none; cursor:pointer; font-size:0.62rem; font-weight:800; box-shadow:0 4px 20px rgba(238,90,36,0.4); transition:transform 0.2s,box-shadow 0.2s; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1px; }
+.sos-btn:hover { transform:scale(1.08); }
+.sos-btn .sos-icon { font-size:1rem; line-height:1; }
+.sos-btn span { font-size:0.58rem; font-weight:900; }
+.bottom-nav { display:flex; justify-content:space-around; align-items:center; padding:10px 12px 20px; background:var(--white); border-top:1px solid var(--border-phone); position:relative; z-index:10; flex-shrink:0; }
+.nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:4px 12px; border-radius:12px; transition:background 0.2s; }
+.nav-item:hover { background:var(--teal-light); }
+.nav-item .ni-icon { font-size:1.3rem; }
+.nav-item .ni-label { font-size:0.62rem; font-weight:700; color:var(--muted); }
+.nav-item.active .ni-label { color:var(--teal-dark); }
+
+/* LOGIN */
+#s-login { background:linear-gradient(180deg,#e8f8f5 0%,#ffffff 60%); }
+.login-content { position:relative; z-index:1; padding:0 32px; display:flex; flex-direction:column; flex:1; }
+.login-logo { text-align:center; padding-top:60px; margin-bottom:8px; }
+.login-logo .brand { font-size:2.8rem; font-weight:900; color:var(--teal-dark); letter-spacing:-0.03em; }
+.login-logo .brand sup { font-size:1.2rem; color:var(--teal); }
+.login-logo .tagline { font-size:0.82rem; color:var(--muted); font-weight:500; margin-top:4px; font-style:italic; }
+.login-form { margin-top:44px; display:flex; flex-direction:column; gap:14px; }
+.inp-wrap { position:relative; }
+.inp-wrap .inp-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:1rem; color:var(--light); }
+.inp-wrap input { width:100%; padding:14px 14px 14px 42px; border:2px solid var(--border-phone); border-radius:16px; font-family:'Nunito',sans-serif; font-size:0.92rem; font-weight:600; color:var(--text-phone); background:#f8fbff; transition:border-color 0.2s; outline:none; }
+.inp-wrap input:focus { border-color:var(--teal); box-shadow:0 0 0 4px rgba(62,207,178,0.12); }
+.inp-wrap input::placeholder { color:var(--light); font-weight:500; }
+.btn-main { width:100%; padding:15px; background:linear-gradient(135deg,var(--teal),#2aa897); color:white; border:none; border-radius:16px; font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800; cursor:pointer; margin-top:8px; box-shadow:0 6px 24px rgba(62,207,178,0.35); transition:transform 0.2s; }
+.btn-main:hover { transform:translateY(-2px); }
+.login-divider { text-align:center; font-size:0.78rem; color:var(--light); margin:8px 0; font-weight:600; }
+.btn-google { width:100%; padding:13px; background:white; border:2px solid var(--border-phone); border-radius:16px; font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:700; color:var(--text-phone); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:border-color 0.2s; }
+.login-footer { text-align:center; margin-top:16px; font-size:0.78rem; color:var(--muted); }
+.login-footer a { color:var(--teal-dark); font-weight:700; cursor:pointer; }
+.safe-note { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:20px; padding:10px 16px; background:rgba(62,207,178,0.08); border-radius:12px; font-size:0.75rem; color:var(--teal-dark); font-weight:600; }
+
+/* BUBBLES */
+#s-bubbles { background:linear-gradient(160deg,#f0faf8 0%,#fefefe 40%,#f0f7ff 100%); }
+.s-header { padding:8px 24px 0; position:relative; z-index:2; flex-shrink:0; }
+.s-header .greeting { font-size:0.8rem; color:var(--muted); font-weight:600; }
+.s-header h2 { font-size:1.25rem; font-weight:800; color:var(--text-phone); line-height:1.3; margin-top:2px; }
+.s-header h2 em { color:var(--teal-dark); font-style:italic; font-family:'Fraunces',serif; }
+.bubble-arena { flex:1; position:relative; z-index:2; overflow:hidden; }
+.em-bubble-btn { position:absolute; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; border:none; font-family:'Nunito',sans-serif; font-weight:800; transition:transform 0.15s; animation:gentleBob ease-in-out infinite; user-select:none; box-shadow:0 6px 24px rgba(0,0,0,0.1),inset 0 -4px 12px rgba(0,0,0,0.06),inset 0 4px 12px rgba(255,255,255,0.5); }
+.em-bubble-btn:hover { transform:scale(1.08) !important; }
+.em-bubble-btn .b-emoji { font-size:1.4rem; line-height:1; }
+.em-bubble-btn .b-label { font-size:0.72rem; font-weight:800; margin-top:3px; }
+@keyframes gentleBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes popBurst { 0%{transform:scale(1);opacity:1} 40%{transform:scale(1.4);opacity:0.7} 70%{transform:scale(1.8);opacity:0.3} 100%{transform:scale(2.4);opacity:0} }
+.bubble-pop { animation:popBurst 0.45s ease-out forwards !important; pointer-events:none; }
+.sparkle { position:absolute; pointer-events:none; z-index:999; animation:sparkleFly 0.6s ease-out forwards; font-size:1.2rem; }
+@keyframes sparkleFly { 0%{transform:translate(0,0) scale(0);opacity:1} 100%{transform:translate(var(--dx),var(--dy)) scale(1);opacity:0} }
+.hint-text { text-align:center; padding:10px 24px; font-size:0.75rem; color:var(--light); font-weight:600; position:relative; z-index:2; flex-shrink:0; }
+.hint-text span { color:var(--teal); }
+
+/* INTENSITY */
+#s-intensity { background:linear-gradient(160deg,#f8f4ff 0%,#ffffff 50%,#f0faf8 100%); }
+.intensity-content { flex:1; padding:0 28px; display:flex; flex-direction:column; justify-content:center; gap:24px; position:relative; z-index:2; }
+.selected-emotion-badge { display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border-radius:20px; font-weight:800; font-size:1rem; align-self:flex-start; }
+.intensity-q { font-size:1.3rem; font-weight:800; color:var(--text-phone); line-height:1.35; }
+.intensity-q em { font-family:'Fraunces',serif; font-style:italic; }
+.slider-container { background:white; border-radius:24px; padding:28px 24px; box-shadow:0 4px 16px rgba(0,0,0,0.08); border:1px solid var(--border-phone); }
+.slider-labels { display:flex; justify-content:space-between; margin-bottom:20px; }
+.slider-label { font-size:0.7rem; font-weight:700; color:var(--light); text-align:center; max-width:70px; line-height:1.3; }
+.slider-track-wrap { position:relative; padding:12px 0; cursor:pointer; }
+.slider-track { height:10px; background:var(--border-phone); border-radius:100px; position:relative; }
+.slider-fill { height:100%; background:linear-gradient(90deg,#3ecfb2,#7b68ee); border-radius:100px; transition:width 0.15s; }
+.slider-thumb { position:absolute; top:50%; width:28px; height:28px; border-radius:50%; background:white; box-shadow:0 3px 12px rgba(0,0,0,0.2),0 0 0 3px var(--teal); transform:translate(-50%,-50%); transition:left 0.15s; cursor:grab; }
+.intensity-emoji { text-align:center; font-size:2.8rem; margin-top:16px; transition:all 0.3s; }
+.intensity-word { text-align:center; font-size:1rem; font-weight:800; color:var(--teal-dark); letter-spacing:0.02em; margin-top:4px; }
+.btn-continue { padding:15px; background:linear-gradient(135deg,#7b68ee,#5a4fcf); color:white; border:none; border-radius:16px; font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800; cursor:pointer; width:100%; box-shadow:0 6px 24px rgba(123,104,238,0.35); transition:transform 0.2s; }
+.btn-continue:hover { transform:translateY(-2px); }
+
+/* SOLUTION */
+#s-solution { background:#ffffff; overflow-y:auto; }
+.sol-scroll { flex:1; overflow-y:auto; padding:0 0 80px; }
+.validation-hero { padding:20px 28px 24px; background:linear-gradient(135deg,#e8fff9,#f0f4ff); margin:0 0 20px; position:relative; overflow:hidden; }
+.validation-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(62,207,178,0.15); }
+.val-emotion-chip { display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:100px; font-size:0.85rem; font-weight:700; margin-bottom:14px; }
+.val-message { font-size:1.05rem; font-weight:700; color:var(--text-phone); line-height:1.5; }
+.val-message em { font-family:'Fraunces',serif; font-style:italic; color:var(--teal-dark); }
+.val-sub { font-size:0.82rem; color:var(--muted); margin-top:8px; line-height:1.6; font-weight:500; }
+.sol-section { padding:0 20px 16px; }
+.sol-section-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--light); font-weight:800; margin-bottom:12px; padding:0 4px; }
+.sol-cards { display:flex; flex-direction:column; gap:10px; }
+.sol-card { background:white; border-radius:18px; padding:16px 18px; border:1.5px solid var(--border-phone); display:flex; align-items:flex-start; gap:14px; transition:border-color 0.2s; cursor:pointer; }
+.sol-card:hover { border-color:var(--teal); }
+.sol-icon { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.sol-card-text h4 { font-size:0.88rem; font-weight:800; color:var(--text-phone); margin-bottom:3px; }
+.sol-card-text p { font-size:0.76rem; color:var(--muted); line-height:1.5; font-weight:500; }
+
+/* JOURNAL */
+#s-journal { background:linear-gradient(160deg,#fffbf0 0%,#ffffff 60%); }
+.journal-scroll { flex:1; overflow-y:auto; padding:0 20px 80px; }
+.journal-date { text-align:center; font-size:0.75rem; color:var(--light); font-weight:700; margin:8px 0 16px; }
+.journal-entries { display:flex; flex-direction:column; gap:12px; }
+.j-entry { background:white; border-radius:18px; padding:18px 20px; border:1.5px solid var(--border-phone); box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+.j-entry-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.j-mood-chip { display:flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:700; }
+.j-time { font-size:0.7rem; color:var(--light); font-weight:600; }
+.j-text { font-size:0.85rem; color:var(--text-phone); line-height:1.6; font-weight:500; }
+.j-tags { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.j-tag { padding:3px 10px; border-radius:100px; font-size:0.68rem; font-weight:700; background:var(--teal-light); color:var(--teal-dark); }
+.journal-input-area { padding:16px 20px; border-top:1px solid var(--border-phone); position:relative; z-index:2; }
+.j-input-box { background:#f8fbff; border:2px solid var(--border-phone); border-radius:16px; padding:12px 50px 12px 16px; font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:500; width:100%; resize:none; outline:none; min-height:52px; transition:border-color 0.2s; color:var(--text-phone); }
+.j-input-box:focus { border-color:var(--teal); }
+.j-send-btn { position:absolute; right:28px; bottom:26px; width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--teal-dark)); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1rem; box-shadow:0 3px 10px rgba(62,207,178,0.3); }
+
+/* CHAT */
+#s-chat { background:linear-gradient(180deg,#e8f4fd 0%,#f8fbff 30%,#ffffff 100%); }
+.chat-header { padding:10px 24px 14px; flex-shrink:0; display:flex; align-items:center; gap:14px; position:relative; z-index:2; }
+.chat-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--teal),#5a9fd4); display:flex; align-items:center; justify-content:center; font-size:1.4rem; box-shadow:0 4px 12px rgba(62,207,178,0.3); }
+.chat-info h3 { font-size:0.95rem; font-weight:800; color:var(--text-phone); }
+.chat-info p { font-size:0.72rem; color:var(--teal-dark); font-weight:600; }
+.online-dot { width:8px; height:8px; background:#48bb78; border-radius:50%; display:inline-block; margin-right:4px; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.chat-messages { flex:1; overflow-y:auto; padding:10px 18px; display:flex; flex-direction:column; gap:10px; }
+.chat-msg { max-width:78%; border-radius:18px; padding:12px 16px; font-size:0.85rem; font-weight:500; line-height:1.5; animation:msgIn 0.3s ease both; }
+@keyframes msgIn { from{opacity:0;transform:translateY(8px) scale(0.97)} to{opacity:1;transform:none} }
+.chat-msg.bot { background:white; color:var(--text-phone); border:1.5px solid var(--border-phone); align-self:flex-start; border-bottom-left-radius:5px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.chat-msg.user { background:linear-gradient(135deg,var(--teal),var(--teal-dark)); color:white; align-self:flex-end; border-bottom-right-radius:5px; }
+.chat-typing { display:flex; gap:4px; align-items:center; padding:12px 16px; background:white; border:1.5px solid var(--border-phone); border-radius:18px; border-bottom-left-radius:5px; width:fit-content; align-self:flex-start; }
+.typing-dot { width:6px; height:6px; background:var(--light); border-radius:50%; animation:typingBounce 1.2s ease infinite; }
+.typing-dot:nth-child(2) { animation-delay:0.2s; }
+.typing-dot:nth-child(3) { animation-delay:0.4s; }
+@keyframes typingBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px);background:var(--teal)} }
+.chat-input-row { padding:12px 18px 20px; display:flex; gap:10px; align-items:flex-end; border-top:1px solid var(--border-phone); background:white; position:relative; z-index:2; flex-shrink:0; }
+.chat-input { flex:1; background:#f8fbff; border:2px solid var(--border-phone); border-radius:20px; padding:11px 16px; font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:500; outline:none; resize:none; color:var(--text-phone); transition:border-color 0.2s; min-height:44px; }
+.chat-input:focus { border-color:var(--teal); }
+.chat-send { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--teal-dark)); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; box-shadow:0 4px 14px rgba(62,207,178,0.35); transition:transform 0.2s; }
+.chat-send:hover { transform:scale(1.05); }
+.back-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:0.85rem; padding:4px; font-weight:700; display:flex; align-items:center; gap:4px; font-family:'Nunito',sans-serif; }
+.back-btn:hover { color:var(--text-phone); }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border-phone); border-radius:2px; }
+
+/* SOS OVERLAY */
+.sos-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.sos-overlay.open { opacity: 1; pointer-events: all; }
+.sos-sheet {
+  background: #1c2330; border-radius: 32px 32px 0 0;
+  padding: 28px 28px 40px; width: 100%; max-width: 500px;
+  border: 1px solid rgba(248,113,113,0.2);
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
+}
+.sos-overlay.open .sos-sheet { transform: translateY(0); }
+.sos-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 100px; margin: 0 auto 20px; }
+.sos-title { font-size: 1.2rem; font-weight: 800; color: #f87171; margin-bottom: 4px; }
+.sos-sub { font-size: 0.82rem; color: #8b949e; margin-bottom: 20px; line-height: 1.5; font-weight: 500; }
+.sos-contacts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.sos-contact { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 16px; background: rgba(248,113,113,0.06); border: 1.5px solid rgba(248,113,113,0.2); cursor: pointer; transition: background 0.2s; }
+.sos-contact:hover { background: rgba(248,113,113,0.12); }
+.sos-contact .sc-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg,#fc8181,#e53e3e); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.sos-contact h4 { font-size: 0.9rem; font-weight: 800; color: #e6edf3; }
+.sos-contact p { font-size: 0.75rem; color: #8b949e; font-weight: 500; }
+.sos-dismiss { width: 100%; padding: 13px; background: #21293a; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; color: #8b949e; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="app">
+
+  <!-- SCREEN 1: LOGIN -->
+  <div class="screen active" id="s-login">
+    <div class="bubbles-bg" id="login-bubbles"></div>
+    <div class="status-bar"><span class="time" id="clock-login">9:41</span><div class="status-icons">📶 🔋</div></div>
+    <div class="login-content">
+      <div class="login-logo">
+        <div class="brand">Surfin<sup>'</sup></div>
+        <div class="tagline">Feel it. Name it. Ride it.</div>
+      </div>
+      <div class="login-form">
+        <div class="inp-wrap"><span class="inp-icon">👤</span><input type="text" placeholder="Your name" id="login-name" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="inp-wrap"><span class="inp-icon">🔒</span><input type="password" placeholder="Password"></div>
+        <button class="btn-main" onclick="doLogin()">Ride the wave →</button>
+        <div class="login-divider">or</div>
+        <button class="btn-google" onclick="doLogin()"><span>🌐</span> Continue with Google</button>
+      </div>
+      <div class="login-footer">New here? <a onclick="doLogin()">Create an account</a></div>
+      <div class="safe-note">🔒 Your feelings are private. Always.</div>
+    </div>
+    <div class="sos-btn" onclick="openSOS()"><span class="sos-icon">🆘</span><span>SOS</span></div>
+  </div>
+
+  <!-- SCREEN 2: BUBBLE SELECT -->
+  <div class="screen" id="s-bubbles">
+    <div class="bubbles-bg" id="bubble-bg-bubbles"></div>
+    <div class="status-bar"><span class="time" id="clock-bubbles">9:41</span><div class="status-icons">📶 🔋</div></div>
+    <div class="s-header">
+      <div class="greeting">Hey <strong id="greet-name">there</strong> 👋 How are you feeling right now?</div>
+      <h2>Pop the bubble that <em>matches your mood</em></h2>
+    </div>
+    <div class="bubble-arena" id="bubbleArena"></div>
+    <div class="hint-text">Tap a bubble to select · <span>pop it to feel it</span></div>
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="phoneGoTo('s-bubbles')"><span class="ni-icon">🫧</span><span class="ni-label">Feel</span></div>
+      <div class="nav-item" onclick="phoneGoTo('s-journal')"><span class="ni-icon">📓</span><span class="ni-label">Journal</span></div>
+      <div class="nav-item" onclick="phoneGoTo('s-chat')"><span class="ni-icon">💬</span><span class="ni-label">Chat</span></div>
+      <div class="nav-item"><span class="ni-icon">📊</span><span class="ni-label">Stats</span></div>
+    </div>
+    <div class="sos-btn" onclick="openSOS()"><span class="sos-icon">🆘</span><span>SOS</span></div>
+  </div>
+
+  <!-- SCREEN 3: INTENSITY -->
+  <div class="screen" id="s-intensity">
+    <div class="status-bar"><span class="time" id="clock-intensity">9:41</span><div class="status-icons">📶 🔋</div></div>
+    <div style="padding:6px 24px 0;position:relative;z-index:2;flex-shrink:0;">
+      <button class="back-btn" onclick="phoneGoTo('s-bubbles')">← Back</button>
+    </div>
+    <div class="intensity-content">
+      <div id="selectedBadge" class="selected-emotion-badge"></div>
+      <div class="intensity-q">How <em>intense</em> is this feeling right now?</div>
+      <div class="slider-container">
+        <div class="slider-labels">
+          <span class="slider-label">Just a whisper</span>
+          <span class="slider-label">Noticeable</span>
+          <span class="slider-label">Taking over</span>
+        </div>
+        <div class="slider-track-wrap" id="sliderTrack" onclick="slideClick(event)" onmousemove="slideMove(event)" ontouchmove="slideTouch(event)">
+          <div class="slider-track"><div class="slider-fill" id="sliderFill" style="width:35%"></div></div>
+          <div class="slider-thumb" id="sliderThumb" style="left:35%"></div>
+        </div>
+        <div class="intensity-emoji" id="intensityEmoji">😐</div>
+        <div class="intensity-word" id="intensityWord">Mild</div>
+      </div>
+      <button class="btn-continue" onclick="phoneGoTo('s-solution')">See what helps →</button>
+    </div>
+    <div class="sos-btn" onclick="openSOS()"><span class="sos-icon">🆘</span><span>SOS</span></div>
+  </div>
+
+  <!-- SCREEN 4: SOLUTION -->
+  <div class="screen" id="s-solution">
+    <div class="status-bar"><span class="time" id="clock-solution">9:41</span><div class="status-icons">📶 🔋</div></div>
+    <div style="padding:6px 24px 0;position:relative;z-index:2;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+      <button class="back-btn" onclick="phoneGoTo('s-intensity')">← Back</button>
+      <span style="font-size:0.72rem;color:var(--muted);font-weight:700;">Your check-in</span>
+    </div>
+    <div class="sol-scroll">
+      <div class="validation-hero">
+        <div id="valChip" class="val-emotion-chip"></div>
+        <div class="val-message" id="valMessage"></div>
+        <div class="val-sub" id="valSub"></div>
+      </div>
+      <div class="sol-section"><div class="sol-section-title">🧠 Mental Wellness</div><div class="sol-cards" id="solMental"></div></div>
+      <div class="sol-section"><div class="sol-section-title">🥗 Diet & Nutrition</div><div class="sol-cards" id="solDiet"></div></div>
+      <div class="sol-section"><div class="sol-section-title">🌿 Daily Habits</div><div class="sol-cards" id="solHabits"></div></div>
+      <div class="sol-section"><div class="sol-section-title">🏃 Physical Activity</div><div class="sol-cards" id="solPhysical"></div></div>
+      <div style="padding:8px 20px;"><button class="btn-main" onclick="phoneGoTo('s-journal');addJournalFromEmotion()" style="margin-top:4px;">Write in journal →</button></div>
+    </div>
+    <div class="sos-btn" onclick="openSOS()"><span class="sos-icon">🆘</span><span>SOS</span></div>
+  </div>
+
+  <!-- SCREEN 5: JOURNAL -->
+  <div class="screen" id="s-journal">
+    <div class="status-bar"><span class="time" id="clock-journal">9:41</span><div class="status-icons">📶 🔋</div></div>
+    <div class="s-header" style="padding-bottom:10px;flex-shrink:0;position:relative;z-index:2;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="font-size:1.2rem;">My <em style="font-family:'Fraunces',serif;font-style:italic;color:var(--teal-dark)">Journal</em></h2>
+        <span style="font-size:0.75rem;color:var(--teal-dark);font-weight:700;background:var(--teal-light);padding:4px 12px;border-radius:100px;cursor:pointer;">+ New</span>
+      </div>
+    </div>
+    <div class="journal-scroll">
+      <div class="journal-date" id="today-date">Today</div>
+      <div class="journal-entries" id="journal-entries">
+        <div class="j-entry">
+          <div class="j-entry-header"><div class="j-mood-chip"><span>😰</span><span style="color:#ed64a6;">Anxious</span></div><span class="j-time">9:20 AM</span></div>
+          <div class="j-text">Woke up feeling heavy today. Surfin helped me realise it might be linked to skipping breakfast the past few days.</div>
+          <div class="j-tags"><span class="j-tag">diet</span><span class="j-tag">morning</span></div>
+        </div>
+        <div class="j-entry">
+          <div class="j-entry-header"><div class="j-mood-chip"><span>🌑</span><span style="color:#7b68ee;">Lonely</span></div><span class="j-time">Yesterday</span></div>
+          <div class="j-text">Felt disconnected even in a room full of people. Maybe I should reach out tomorrow.</div>
+          <div class="j-tags"><span class="j-tag">connection</span><span class="j-tag">reflection</span></div>
+        </div>
+        <div class="j-entry" style="border-color:rgba(62,207,178,0.3);background:rgba(62,207,178,0.03);">
+          <div class="j-entry-header"><div class="j-mood-chip"><span>🌤</span><span style="color:var(--teal-dark);">Hopeful</span></div><span class="j-time">2 days ago</span></div>
+          <div class="j-text">Went for a 20 min walk without my phone. Actually felt okay after. Small win.</div>
+          <div class="j-tags"><span class="j-tag">walk</span><span class="j-tag">small wins</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="journal-input-area">
+      <textarea class="j-input-box" placeholder="How are you feeling right now…" rows="2" id="journalInput"></textarea>
+      <button class="j-send-btn" onclick="addJournalEntry()">✍️</button>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="phoneGoTo('s-bubbles')"><span class="ni-icon">🫧</span><span class="ni-label">Feel</span></div>
+      <div class="nav-item active" onclick="phoneGoTo('s-journal')"><span class="ni-icon">📓</span><span class="ni-label">Journal</span></div>
+      <div class="nav-item" onclick="phoneGoTo('s-chat')"><span class="ni-icon">💬</span><span class="ni-label">Chat</span></div>
+      <div class="nav-item"><span class="ni-icon">📊</span><span class="ni-label">Stats</span></div>
+    </div>
+    <div class="sos-btn" onclick="openSOS()"><span class="sos-icon">🆘</span><span>SOS</span></div>
+  </div>
+
+  <!-- SCREEN 6: CHAT -->
+  <div class="screen" id="s-chat">
+    <div class="bubbles-bg" id="chat-bg-bubbles"></div>
+    <div class="status-bar"><span class="time" id="clock-chat">9:41</span><div class="status-icons">📶 🔋</div></div>
+    <div class="chat-header">
+      <div class="chat-avatar">🌊</div>
+      <div class="chat-info"><h3>Surfin Chat</h3><p><span class="online-dot"></span>Always here for you</p></div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot">Hey there 🌊 I'm your Surfin companion. How are you doing today?</div>
+      <div class="chat-msg bot">You can share anything — there's no judgement here. I'm listening 💙</div>
+    </div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" placeholder="Type how you feel…" id="chatInput" rows="1" onkeydown="chatKeydown(event)"></textarea>
+      <button class="chat-send" onclick="sendChat()">➤</button>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="phoneGoTo('s-bubbles')"><span class="ni-icon">🫧</span><span class="ni-label">Feel</span></div>
+      <div class="nav-item" onclick="phoneGoTo('s-journal')"><span class="ni-icon">📓</span><span class="ni-label">Journal</span></div>
+      <div class="nav-item active" onclick="phoneGoTo('s-chat')"><span class="ni-icon">💬</span><span class="ni-label">Chat</span></div>
+      <div class="nav-item"><span class="ni-icon">📊</span><span class="ni-label">Stats</span></div>
+    </div>
+    <div class="sos-btn" onclick="openSOS()"><span class="sos-icon">🆘</span><span>SOS</span></div>
+  </div>
+
+</div><!-- /phone -->
+
+<!-- SOS OVERLAY -->
+<div class="sos-overlay" id="sosOverlay" onclick="closeSOS(event)">
+  <div class="sos-sheet">
+    <div class="sos-handle"></div>
+    <div class="sos-title">🆘 You're not alone</div>
+    <div class="sos-sub">We noticed you might need support right now. Reach out to someone — it takes courage, and you have it.</div>
+    <div class="sos-contacts">
+      <div class="sos-contact"><div class="sc-avatar">👩</div><div><h4>Mum</h4><p>📞 Tap to call · Trusted contact</p></div></div>
+      <div class="sos-contact"><div class="sc-avatar">💙</div><div><h4>iCall India Helpline</h4><p>📞 9152987821 · Available now</p></div></div>
+      <div class="sos-contact"><div class="sc-avatar">🌊</div><div><h4>Talk to Surfin AI</h4><p>💬 Open a safe space right now</p></div></div>
+    </div>
+    <button class="sos-dismiss" onclick="document.getElementById('sosOverlay').classList.remove('open')">I'm okay for now</button>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const BACKEND = 'http://localhost:5000'; // Flask backend URL
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentScreen = 's-login';
+let selectedEmotion = null;
+let intensity = 35;
+let userName = 'User';
+let userId = 'demo_user';
+
+// ─── CLOCK ───────────────────────────────────────────────────────────────────
+function updateClocks() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true}).replace(' ','');
+  document.querySelectorAll('[id^="clock-"]').forEach(el => el.textContent = t);
+}
+updateClocks(); setInterval(updateClocks, 60000);
+
+const today = new Date();
+document.getElementById('today-date').textContent =
+  'Today — ' + today.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function phoneGoTo(id) {
+  const prev = document.getElementById(currentScreen);
+  const next = document.getElementById(id);
+  if (!next) return;
+  if (prev) { prev.classList.add('exit'); setTimeout(() => prev.classList.remove('active','exit'), 400); }
+  setTimeout(() => next.classList.add('active'), 50);
+  currentScreen = id;
+  if (id === 's-solution') buildSolutionScreen();
+  if (id === 's-bubbles' && !bubblesInited) initBubbles();
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+function doLogin() {
+  const nameEl = document.getElementById('login-name');
+  const name = nameEl.value.trim() || 'Friend';
+  userName = name;
+  userId = 'user_' + name.toLowerCase().replace(/\s+/g,'_');
+  document.getElementById('greet-name').textContent = name;
+  callBackend('/api/login', {name}, (r) => { if (r && r.user_id) userId = r.user_id; });
+  phoneGoTo('s-bubbles');
+}
+
+// ─── AUDIO ────────────────────────────────────────────────────────────────────
+let audioCtx;
+function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+function playPop(freq=440) {
+  try { const ctx=getAudio(), osc=ctx.createOscillator(), g=ctx.createGain(); osc.connect(g); g.connect(ctx.destination); osc.type='sine'; osc.frequency.setValueAtTime(freq,ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(freq*0.3,ctx.currentTime+0.15); g.gain.setValueAtTime(0.35,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2); osc.start(); osc.stop(ctx.currentTime+0.2); } catch(e){}
+}
+
+// ─── EMOTIONS ─────────────────────────────────────────────────────────────────
+const emotions = [
+  {label:'Sad',emoji:'😢',color:'#b0c8f0',text:'#3a6ea8',size:100,x:40,y:130},
+  {label:'Anxious',emoji:'😰',color:'#f5d76e',text:'#8a6a00',size:90,x:200,y:100},
+  {label:'Panicked',emoji:'😱',color:'#f4a97f',text:'#8a4500',size:105,x:120,y:230},
+  {label:'Lonely',emoji:'🌑',color:'#b8a4e8',text:'#4a2d8a',size:82,x:270,y:200},
+  {label:'Stressed',emoji:'😤',color:'#f4a0b5',text:'#8a2a4a',size:95,x:50,y:310},
+  {label:'Feeling Blue',emoji:'💙',color:'#a0d4f5',text:'#1a5a8a',size:88,x:210,y:340},
+  {label:'Angry',emoji:'😠',color:'#f5a0a0',text:'#8a1a1a',size:75,x:310,y:120},
+  {label:'Overwhelmed',emoji:'😮‍💨',color:'#b5e8c0',text:'#1a6a3a',size:70,x:295,y:300},
+  {label:'Numb',emoji:'😶',color:'#d5d5e8',text:'#4a4a6a',size:65,x:145,y:400},
+  {label:'Hopeful',emoji:'🌤',color:'#fde68a',text:'#7a5a00',size:72,x:30,y:430},
+  {label:'Empty',emoji:'🍂',color:'#e8d5b5',text:'#6a4a1a',size:60,x:255,y:440},
+];
+let bubblesInited = false;
+
+function initBubbles() {
+  bubblesInited = true;
+  const arena = document.getElementById('bubbleArena');
+  arena.innerHTML = '';
+  emotions.forEach((em,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'em-bubble-btn';
+    btn.style.cssText = `width:${em.size}px;height:${em.size}px;background:${em.color};color:${em.text};left:${em.x}px;top:${em.y}px;animation-duration:${3+i*0.4}s;animation-delay:${i*0.2}s;`;
+    btn.innerHTML = `<span class="b-emoji">${em.emoji}</span><span class="b-label">${em.label}</span>`;
+    btn.addEventListener('click', (e) => selectEmotion(em, btn, e));
+    arena.appendChild(btn);
+  });
+  startBgBubbles('bubble-bg-bubbles');
+}
+
+function selectEmotion(em, btn, e) {
+  playPop(300 + Math.random()*300);
+  spawnSparkles(e.clientX, e.clientY);
+  btn.classList.add('bubble-pop');
+  selectedEmotion = em;
+  setTimeout(() => {
+    const badge = document.getElementById('selectedBadge');
+    badge.style.cssText = `background:${em.color};color:${em.text};align-self:flex-start;`;
+    badge.innerHTML = `${em.emoji} <span>${em.label}</span>`;
+    phoneGoTo('s-intensity');
+  }, 300);
+}
+
+function spawnSparkles(cx, cy) {
+  const sparks = ['✨','💫','⭐','🌟'];
+  for (let i=0; i<5; i++) {
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    const angle = (i/5)*Math.PI*2, dist = 50+Math.random()*30;
+    s.style.cssText = `left:${cx}px;top:${cy}px;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;position:fixed;z-index:9999;`;
+    s.textContent = sparks[Math.floor(Math.random()*sparks.length)];
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),700);
+  }
+}
+
+function startBgBubbles(id) {
+  const c = document.getElementById(id); if (!c) return;
+  const colors = ['rgba(62,207,178,0.2)','rgba(74,158,255,0.15)','rgba(180,150,240,0.18)','rgba(255,180,100,0.12)'];
+  function spawnBg() {
+    const b = document.createElement('div'); b.className='bg-b';
+    const sz = 15+Math.random()*45;
+    b.style.cssText = `width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};left:${Math.random()*100}%;box-shadow:inset 0 0 ${sz*0.3}px rgba(255,255,255,0.4);animation-duration:${6+Math.random()*8}s;animation-delay:${Math.random()*2}s;`;
+    c.appendChild(b); setTimeout(()=>b.remove(),14000);
+  }
+  for(let i=0;i<8;i++) setTimeout(spawnBg,i*400);
+  setInterval(spawnBg,1800);
+}
+startBgBubbles('login-bubbles');
+startBgBubbles('chat-bg-bubbles');
+
+// ─── INTENSITY SLIDER ─────────────────────────────────────────────────────────
+function updateIntensity(pct) {
+  intensity = Math.max(2, Math.min(98, pct));
+  document.getElementById('sliderFill').style.width = intensity+'%';
+  document.getElementById('sliderThumb').style.left = intensity+'%';
+  const levels=[{max:20,emoji:'😌',word:'Barely there'},{max:40,emoji:'😐',word:'Mild'},{max:60,emoji:'😕',word:'Noticeable'},{max:80,emoji:'😟',word:'Quite intense'},{max:100,emoji:'😰',word:'Overwhelming'}];
+  const lvl=levels.find(l=>intensity<=l.max)||levels[4];
+  document.getElementById('intensityEmoji').textContent=lvl.emoji;
+  document.getElementById('intensityWord').textContent=lvl.word;
+}
+function slideClick(e){const t=document.getElementById('sliderTrack'),r=t.getBoundingClientRect();updateIntensity(((e.clientX-r.left)/r.width)*100);}
+function slideMove(e){if(e.buttons===1)slideClick(e);}
+function slideTouch(e){e.preventDefault();const t=document.getElementById('sliderTrack'),r=t.getBoundingClientRect();updateIntensity(((e.touches[0].clientX-r.left)/r.width)*100);}
+updateIntensity(35);
+
+// ─── SOLUTION SCREEN ──────────────────────────────────────────────────────────
+const solutionData = {
+Sad:{validation:'<em>Sadness</em> is valid. You\'re allowed to feel this.',sub:'These suggestions may gently help.',mental:[{icon:'📓',bg:'#e8f0fc',title:'Write what hurts',body:'Putting sadness into words reduces emotional load.'},{icon:'🫂',bg:'#fce8f0',title:'Talk to someone',body:'Connection is one of the strongest buffers against sadness.'}],diet:[{icon:'🍫',bg:'#fff3e8',title:'Dark chocolate',body:'Can increase serotonin and improve mood.'},{icon:'🐟',bg:'#e8f8ff',title:'Omega-3 foods',body:'Fish, walnuts, flax seeds support emotional balance.'}],habits:[{icon:'☀️',bg:'#fffbe8',title:'Sunlight',body:'15 minutes naturally boosts serotonin.'},{icon:'🎵',bg:'#e8f5ec',title:'Listen to music',body:'Music activates emotional regulation networks.'}],physical:[{icon:'🚶',bg:'#e8f5f8',title:'Take a short walk',body:'Even 10 minutes helps regulate mood.'}]},
+Anxious:{validation:'<em>Anxiety</em> is your mind trying to protect you. Let\'s turn the volume down.',sub:'Try these gentle resets.',mental:[{icon:'🧘',bg:'#e8f5f0',title:'Grounding exercise',body:'Name 5 things you see, 4 you touch, 3 you hear.'},{icon:'🫂',bg:'#fce8f0',title:'Reach out',body:'Talking breaks anxiety loops.'}],diet:[{icon:'🥬',bg:'#f0f8e8',title:'Magnesium foods',body:'Leafy greens and nuts calm the nervous system.'},{icon:'☕',bg:'#fffbe8',title:'Reduce caffeine',body:'Caffeine amplifies anxiety signals.'}],habits:[{icon:'📵',bg:'#f0f0f8',title:'Limit doomscrolling',body:'Information overload triggers anxious thinking.'}],physical:[{icon:'🚶',bg:'#e8f5f8',title:'Walk outside',body:'Movement reduces cortisol.'}]},
+Panicked:{validation:'A <em>panic attack</em> is temporary. You will get through this.',sub:'Focus on your breath first.',mental:[{icon:'🫁',bg:'#e8f5f0',title:'Box breathing',body:'Inhale 4s, hold 4s, exhale 4s.'},{icon:'🧠',bg:'#f0f0ff',title:'Remind yourself',body:'Panic attacks pass. You are safe.'}],diet:[{icon:'💧',bg:'#e8f8ff',title:'Drink water',body:'Hydration helps stabilise stress responses.'}],habits:[{icon:'🛑',bg:'#fff0f0',title:'Pause stimulation',body:'Reduce noise, screens and stimulation.'}],physical:[{icon:'🚶',bg:'#e8f5f8',title:'Slow movement',body:'Walking slowly helps reset breathing rhythm.'}]},
+Lonely:{validation:'<em>Loneliness</em> is real. You\'re not broken for feeling it.',sub:'Small steps toward connection.',mental:[{icon:'📞',bg:'#fce8f0',title:'Call someone',body:'Even a short conversation helps.'},{icon:'💬',bg:'#e8f0fc',title:'Join a community',body:'Online communities still provide real connection.'}],diet:[{icon:'🍲',bg:'#fff3e8',title:'Warm meals',body:'Warm foods psychologically mimic social comfort.'}],habits:[{icon:'🐕',bg:'#e8f5ec',title:'Spend time with pets',body:'Animals reduce loneliness hormones.'}],physical:[{icon:'🚶',bg:'#e8f5f8',title:'Go outside',body:'Seeing people helps break isolation.'}]},
+Stressed:{validation:'<em>Stress</em> means you care. Let\'s dial it back a notch.',sub:'Try one of these right now.',mental:[{icon:'🧠',bg:'#f0f0ff',title:'Break the task down',body:'Small tasks reduce overwhelm.'},{icon:'🧘',bg:'#e8f5f0',title:'2-minute breathing',body:'Even brief breathing reduces cortisol.'}],diet:[{icon:'🍌',bg:'#fffbe8',title:'Bananas',body:'Support serotonin production.'}],habits:[{icon:'📵',bg:'#f0f0f8',title:'Take a screen break',body:'Mental fatigue increases stress.'}],physical:[{icon:'🏃',bg:'#e8f5ec',title:'Quick exercise',body:'Short bursts release tension.'}]},
+'Feeling Blue':{validation:'A <em>blue feeling</em> isn\'t weakness. It\'s weather.',sub:'Gentle nudges for a grey day.',mental:[{icon:'📓',bg:'#e8f0fc',title:'Reflect in journal',body:'Writing clarifies emotions.'}],diet:[{icon:'🍊',bg:'#fffbe8',title:'Vitamin C foods',body:'Citrus supports mood regulation.'}],habits:[{icon:'🌤',bg:'#e8f5ec',title:'Change environment',body:'Even a new room shifts emotional state.'}],physical:[{icon:'🚶',bg:'#e8f5f8',title:'Light walk',body:'Movement lifts mood slightly.'}]},
+Angry:{validation:'<em>Anger</em> is energy. Let\'s redirect it.',sub:'Before you react, try this.',mental:[{icon:'🧠',bg:'#fef0f0',title:'Pause before reacting',body:'Give your brain 90 seconds.'},{icon:'📓',bg:'#f0f0ff',title:'Write the anger out',body:'Writing prevents emotional spillover.'}],diet:[{icon:'💧',bg:'#e8f8ff',title:'Drink water',body:'Dehydration increases irritability.'}],habits:[{icon:'📵',bg:'#f0f0f8',title:'Step away from triggers',body:'Distance prevents escalation.'}],physical:[{icon:'🥊',bg:'#ffe8e8',title:'Release energy',body:'Push-ups or fast walking help discharge anger.'}]},
+Overwhelmed:{validation:'<em>Overwhelmed</em> is too much at once. One thing at a time.',sub:'Start with the smallest step.',mental:[{icon:'🧠',bg:'#f0f0ff',title:'One thing only',body:'Focus on one small task.'},{icon:'📓',bg:'#e8f0fc',title:'Brain dump',body:'Write everything stressing you.'}],diet:[{icon:'🥗',bg:'#e8f8f0',title:'Eat something simple',body:'Low blood sugar increases overwhelm.'}],habits:[{icon:'📅',bg:'#f0f0f8',title:'Simplify schedule',body:'Remove one obligation today.'}],physical:[{icon:'🧘',bg:'#e8f5f0',title:'Slow breathing',body:'Long exhales calm the nervous system.'}]},
+Numb:{validation:'<em>Numbness</em> is still a feeling. It\'s okay.',sub:'Gentle reconnection steps.',mental:[{icon:'🧠',bg:'#f0f0ff',title:'Name what you notice',body:'Observing sensations reconnects awareness.'}],diet:[{icon:'🍵',bg:'#e8f8ff',title:'Warm tea',body:'Warm drinks stimulate sensory awareness.'}],habits:[{icon:'🎧',bg:'#e8f5ec',title:'Listen to music',body:'Music helps emotions re-engage.'}],physical:[{icon:'🚶',bg:'#e8f5f8',title:'Gentle movement',body:'Movement reconnects body and mind.'}]},
+Hopeful:{validation:'<em>Hope</em> is brave. Hold on to it.',sub:'Fuel that feeling.',mental:[{icon:'🌱',bg:'#e8f5ec',title:'Write a small goal',body:'Turn hope into action.'}],diet:[{icon:'🥗',bg:'#e8f8f0',title:'Eat nourishing food',body:'Fuel your energy for the day.'}],habits:[{icon:'📅',bg:'#f0f0f8',title:'Plan tomorrow',body:'Momentum strengthens hope.'}],physical:[{icon:'🏃',bg:'#e8f5ec',title:'Stay active',body:'Movement sustains positive mood.'}]},
+Empty:{validation:'<em>Empty</em> is real. You don\'t have to fill it immediately.',sub:'Slow, gentle steps.',mental:[{icon:'📓',bg:'#e8f0fc',title:'Write freely',body:'Express anything without judgment.'}],diet:[{icon:'🥗',bg:'#e8f8f0',title:'Balanced meal',body:'Stable blood sugar supports emotional clarity.'}],habits:[{icon:'🌿',bg:'#e8f5ec',title:'Spend time in nature',body:'Nature reconnects emotional awareness.'}],physical:[{icon:'🚶',bg:'#e8f5f8',title:'Gentle walk',body:'Movement can slowly reconnect feeling.'}]}
+};
+
+function buildSolutionScreen() {
+  const em = selectedEmotion || {label:'',emoji:'😶',color:'#eee',text:'#666'};
+  const d = solutionData[em.label] || solutionData['Sad'];
+  const chip = document.getElementById('valChip');
+  chip.style.cssText = `background:${em.color};color:${em.text};`;
+  chip.innerHTML = `${em.emoji} ${em.label || 'Your emotion'}`;
+  document.getElementById('valMessage').innerHTML = d.validation || '';
+  document.getElementById('valSub').textContent = d.sub || '';
+  ['Mental','Diet','Habits','Physical'].forEach(k => {
+    const el = document.getElementById('sol' + k);
+    const cards = d[k.toLowerCase()] || [];
+    el.innerHTML = cards.map(c => `<div class="sol-card"><div class="sol-icon" style="background:${c.bg}">${c.icon}</div><div class="sol-card-text"><h4>${c.title}</h4><p>${c.body}</p></div></div>`).join('');
+  });
+}
+
+// ─── JOURNAL ──────────────────────────────────────────────────────────────────
+function addJournalEntry() {
+  const input = document.getElementById('journalInput');
+  const text = input.value.trim();
+  if (!text) return;
+  appendJournalEntry(text, selectedEmotion);
+  input.value = '';
+  sendToML(text);
+}
+function addJournalFromEmotion() {
+  if (selectedEmotion) {
+    const text = `Feeling ${selectedEmotion.label.toLowerCase()} today (intensity: ${intensity}%)`;
+    appendJournalEntry(text, selectedEmotion);
+    sendToML(text);
+  }
+}
+function appendJournalEntry(text, em) {
+  const container = document.getElementById('journal-entries');
+  const now = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const entry = document.createElement('div');
+  entry.className = 'j-entry';
+  entry.style.borderColor = 'rgba(62,207,178,0.4)';
+  entry.innerHTML = `
+    <div class="j-entry-header">
+      <div class="j-mood-chip"><span>${em?em.emoji:'📝'}</span><span style="color:var(--teal-dark)">${em?em.label:'Note'}</span></div>
+      <span class="j-time">${now}</span>
+    </div>
+    <div class="j-text">${text}</div>`;
+  container.prepend(entry);
+}
+
+// ─── ML BACKEND ───────────────────────────────────────────────────────────────
+function callBackend(endpoint, data, callback) {
+  fetch(BACKEND + endpoint, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  }).then(r => r.json()).then(callback).catch(err => console.warn('Backend:', err));
+}
+
+function sendToML(text) {
+  callBackend('/api/analyze', {text, user_id: userId}, (result) => {
+    if (!result || result.error) return;
+    if (result.sos_trigger || result.risk_level === 'CRISIS') setTimeout(openSOS, 600);
+  });
+}
+
+// ─── CHAT ─────────────────────────────────────────────────────────────────────
+const botResponses=[
+  "That makes a lot of sense. You don't have to figure it all out right now 💙",
+  "Thank you for sharing that. What does that feel like in your body right now?",
+  "I hear you. It sounds really heavy. What would feel like one small relief?",
+  "You're being so brave just by naming it. Is there someone who knows?",
+  "Sometimes our hardest feelings just need to be witnessed. You're doing that right now 🌊",
+];
+let botIdx=0;
+const crisisWords=['suicid','kill myself','end it','want to die','hopeless','hurt myself'];
+function chatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function sendChat(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim(); if(!text)return;
+  const msgs=document.getElementById('chatMessages');
+  const um=document.createElement('div'); um.className='chat-msg user'; um.textContent=text;
+  msgs.appendChild(um); input.value=''; msgs.scrollTop=msgs.scrollHeight;
+  const isCrisis=crisisWords.some(w=>text.toLowerCase().includes(w));
+  if(isCrisis)setTimeout(openSOS,400);
+  const typing=document.createElement('div'); typing.className='chat-typing';
+  typing.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  msgs.appendChild(typing); msgs.scrollTop=msgs.scrollHeight;
+  callBackend('/api/chat',{message:text,user_id:userId},(r)=>{
+    typing.remove();
+    const bm=document.createElement('div'); bm.className='chat-msg bot';
+    bm.textContent=r&&r.response?r.response:botResponses[botIdx++%botResponses.length];
+    msgs.appendChild(bm); msgs.scrollTop=msgs.scrollHeight;
+    if(r&&r.sos_trigger)setTimeout(openSOS,600);
+  });
+  setTimeout(()=>{
+    if(typing.parentNode){
+      typing.remove();
+      const bm=document.createElement('div'); bm.className='chat-msg bot';
+      bm.textContent=isCrisis?"I noticed something in what you shared. You matter. Please reach out 💙":botResponses[botIdx++%botResponses.length];
+      msgs.appendChild(bm); msgs.scrollTop=msgs.scrollHeight;
+    }
+  },3000);
+}
+
+// ─── SOS ──────────────────────────────────────────────────────────────────────
+function openSOS(){document.getElementById('sosOverlay').classList.add('open');}
+function closeSOS(e){if(e.target===document.getElementById('sosOverlay'))document.getElementById('sosOverlay').classList.remove('open');}
+
+window.addEventListener('load', () => { setTimeout(initBubbles, 100); });
+</script>
+</body>
+</html>

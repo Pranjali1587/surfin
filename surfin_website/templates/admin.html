@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surfin' Admin — Wave Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #080c12;
+  --surface:  #0e1520;
+  --surface2: #131d2b;
+  --surface3: #172234;
+  --teal:     #3ecfb2;
+  --teal-d:   #2aa897;
+  --teal-glow:rgba(62,207,178,0.18);
+  --blue:     #4a9eff;
+  --purple:   #7b68ee;
+  --pink:     #f472b6;
+  --yellow:   #fbbf24;
+  --red:      #f87171;
+  --green:    #34d399;
+  --text:     #e2e8f0;
+  --muted:    #8b949e;
+  --dim:      #4a5568;
+  --border:   rgba(255,255,255,0.06);
+  --border-t: rgba(62,207,178,0.18);
+  --sidebar-w:240px;
+}
+
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; overflow: hidden; }
+
+/* ── NOISE LAYER ── */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.6;
+}
+
+/* ── AMBIENT GLOWS ── */
+.glow { position:fixed; border-radius:50%; filter:blur(90px); opacity:0.2; pointer-events:none; z-index:0; }
+.glow-1 { width:600px; height:600px; background:radial-gradient(#3ecfb2,transparent); top:-200px; left:-150px; }
+.glow-2 { width:500px; height:500px; background:radial-gradient(#7b68ee,transparent); bottom:-200px; right:-100px; }
+.glow-3 { width:300px; height:300px; background:radial-gradient(#4a9eff,transparent); top:40%; left:40%; opacity:0.1; }
+
+/* ── LAYOUT ── */
+.shell { position:relative; z-index:1; display:grid; grid-template-columns:var(--sidebar-w) 1fr; grid-template-rows:100vh; height:100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { display:none; }
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 8px 20px; border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.brand-icon {
+  width: 38px; height: 38px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-d));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(62,207,178,0.35);
+}
+.brand-text { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.03em; }
+.brand-text span { color: var(--teal); }
+.brand-badge {
+  font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted); display: block; margin-top: -2px;
+}
+
+.nav-section { margin-bottom: 24px; }
+.nav-section-label {
+  font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--dim); font-weight: 800; padding: 0 10px; margin-bottom: 6px;
+  font-family: 'DM Mono', monospace;
+}
+.nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 10px; border-radius: 10px;
+  border: 1px solid transparent; background: none; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 700;
+  color: var(--muted); transition: all 0.18s; margin-bottom: 2px; text-align: left;
+}
+.nav-btn:hover { background: var(--surface2); color: var(--text); }
+.nav-btn.active { background: rgba(62,207,178,0.08); color: var(--teal); border-color: var(--border-t); }
+.nav-btn .nb-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
+.nav-btn .nb-badge {
+  margin-left: auto; font-size: 0.6rem; font-weight: 800;
+  padding: 2px 7px; border-radius: 100px;
+  background: var(--teal); color: var(--bg);
+}
+.nav-btn .nb-dot {
+  margin-left: auto; width: 7px; height: 7px; border-radius: 50;
+  animation: livePulse 2s infinite;
+}
+
+.sidebar-footer { margin-top: auto; padding: 12px 8px 0; border-top: 1px solid var(--border); }
+.sf-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.sf-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--teal), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 800; color: white;
+}
+.sf-name { font-size: 0.82rem; font-weight: 800; color: var(--text); }
+.sf-role { font-size: 0.65rem; color: var(--muted); font-weight: 600; }
+
+/* ── MAIN CONTENT ── */
+.main {
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(14,21,32,0.8); backdrop-filter: blur(12px);
+  flex-shrink: 0; gap: 16px;
+}
+.topbar-left h1 { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+.topbar-left p { font-size: 0.72rem; color: var(--muted); font-weight: 600; margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.tb-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border-radius: 100px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 0.75rem; font-weight: 700; color: var(--muted); cursor: pointer;
+  transition: border-color 0.2s;
+}
+.tb-chip:hover { border-color: var(--border-t); color: var(--teal); }
+.tb-chip .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: livePulse 2s infinite; }
+@keyframes livePulse { 0%,100%{box-shadow:0 0 0 0 rgba(62,207,178,0.4)} 50%{box-shadow:0 0 0 5px rgba(62,207,178,0)} }
+
+.tb-user-select {
+  padding: 7px 14px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; outline: none; transition: border-color 0.2s;
+}
+.tb-user-select:focus { border-color: var(--border-t); }
+
+.tb-refresh {
+  padding: 8px 14px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-d));
+  border: none; color: var(--bg); font-family: 'Nunito', sans-serif;
+  font-size: 0.78rem; font-weight: 800; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(62,207,178,0.3);
+}
+.tb-refresh:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(62,207,178,0.4); }
+
+/* ── SCROLL AREA ── */
+.content {
+  flex: 1; overflow-y: auto; padding: 24px 28px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.content::-webkit-scrollbar { width: 5px; }
+.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── PANELS ── */
+.panel { display: none; flex-direction: column; gap: 20px; }
+.panel.active { display: flex; }
+
+/* ── SECTION HEADERS ── */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.section-head h3 {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 800;
+  color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+.section-head .sh-sub { font-size: 0.68rem; color: var(--muted); font-weight: 600; }
+
+/* ── KPI GRID ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 18px 20px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  position: relative; overflow: hidden;
+}
+.kpi-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: var(--accent, var(--teal)); opacity: 0.6;
+}
+.kpi-card:hover { border-color: var(--border-t); box-shadow: 0 0 30px rgba(62,207,178,0.08); }
+.kpi-icon { font-size: 1.3rem; margin-bottom: 10px; }
+.kpi-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 800; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+.kpi-value { font-size: 2rem; font-weight: 900; font-family: 'Syne', sans-serif; line-height: 1; color: var(--text); }
+.kpi-sub { font-size: 0.7rem; color: var(--muted); font-weight: 600; margin-top: 6px; }
+.kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 100px; margin-top: 6px; }
+.kpi-delta.up { background: rgba(52,211,153,0.12); color: var(--green); }
+.kpi-delta.down { background: rgba(248,113,113,0.12); color: var(--red); }
+.kpi-delta.neutral { background: rgba(251,191,36,0.12); color: var(--yellow); }
+
+/* ── CHARTS ROW ── */
+.charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px;
+}
+.chart-card .cc-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 800; margin-bottom: 16px; font-family: 'DM Mono', monospace; }
+.chart-wrap { position: relative; }
+canvas { display: block; width: 100% !important; }
+
+/* ── DRIFT CARD ── */
+.drift-display {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px;
+}
+.drift-meter-wrap { background: var(--surface3); border-radius: 100px; height: 14px; overflow: hidden; margin: 12px 0 8px; }
+.drift-meter-fill { height: 100%; border-radius: 100px; transition: width 0.9s cubic-bezier(0.34,1.2,0.64,1), background 0.5s; position: relative; }
+.drift-meter-fill::after { content:''; position:absolute; top:3px; left:8px; right:8px; height:4px; background:rgba(255,255,255,0.2); border-radius:100px; }
+.drift-ticks { display: flex; justify-content: space-between; }
+.drift-ticks span { font-size: 0.6rem; color: var(--dim); font-weight: 700; font-family: 'DM Mono', monospace; }
+.drift-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 100px;
+  font-size: 0.8rem; font-weight: 800; margin-top: 14px;
+  transition: all 0.5s;
+}
+.drift-message { font-size: 0.78rem; color: var(--muted); line-height: 1.6; margin-top: 10px; font-weight: 500; }
+.drift-action { font-size: 0.75rem; color: var(--teal); font-weight: 700; margin-top: 8px; }
+
+/* ── EMOTION BREAKDOWN ── */
+.emo-grid { display: flex; flex-direction: column; gap: 8px; }
+.emo-row { display: flex; align-items: center; gap: 10px; }
+.emo-row .er-label { font-size: 0.75rem; font-weight: 700; color: var(--muted); width: 90px; flex-shrink: 0; }
+.emo-row .er-track { flex: 1; height: 8px; background: var(--surface3); border-radius: 100px; overflow: hidden; }
+.emo-row .er-fill { height: 100%; border-radius: 100px; transition: width 0.6s ease; }
+.emo-row .er-pct { font-size: 0.68rem; font-weight: 700; color: var(--muted); width: 38px; text-align: right; font-family: 'DM Mono', monospace; }
+
+/* ── SIGNALS ── */
+.signals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.signal-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px;
+  transition: border-color 0.2s;
+}
+.signal-card.triggered { border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.04); }
+.signal-card.ok { border-color: rgba(52,211,153,0.2); background: rgba(52,211,153,0.03); }
+.sc-name { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 800; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+.sc-val { font-size: 1.2rem; font-weight: 900; font-family: 'Syne', sans-serif; }
+.sc-status { font-size: 0.7rem; font-weight: 700; margin-top: 4px; }
+
+/* ── USERS TABLE ── */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.table-head { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.5fr; padding: 12px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+.table-head span { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); font-weight: 800; font-family: 'DM Mono', monospace; }
+.table-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.5fr; padding: 14px 20px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.15s; cursor: pointer; }
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: var(--surface2); }
+.table-row .tr-name { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 700; }
+.tr-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; flex-shrink: 0; }
+.tr-cell { font-size: 0.8rem; font-weight: 600; color: var(--muted); font-family: 'DM Mono', monospace; }
+.risk-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 0.68rem; font-weight: 800; }
+.risk-safe { background: rgba(52,211,153,0.1); color: var(--green); }
+.risk-low  { background: rgba(251,191,36,0.1); color: var(--yellow); }
+.risk-high { background: rgba(249,115,22,0.1); color: #f97316; }
+.risk-crisis { background: rgba(248,113,113,0.15); color: var(--red); animation: crisisBlink 1.5s infinite; }
+@keyframes crisisBlink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ── ENTRY LOG ── */
+.log-list { display: flex; flex-direction: column; gap: 8px; }
+.log-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px 18px;
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 14px; align-items: start;
+  transition: border-color 0.2s; cursor: pointer;
+}
+.log-item:hover { border-color: var(--border-t); }
+.log-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.log-text { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+.log-text strong { color: var(--text); font-weight: 700; }
+.log-meta { font-size: 0.65rem; color: var(--dim); font-weight: 700; text-align: right; font-family: 'DM Mono', monospace; white-space: nowrap; }
+
+/* ── CRISIS ALERT ── */
+.crisis-alert {
+  background: rgba(248,113,113,0.06); border: 1.5px solid rgba(248,113,113,0.3);
+  border-radius: 16px; padding: 18px 20px;
+  display: none; animation: alertIn 0.4s ease;
+}
+.crisis-alert.visible { display: block; }
+@keyframes alertIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.ca-title { font-size: 1rem; font-weight: 800; color: var(--red); margin-bottom: 6px; font-family: 'Syne', sans-serif; }
+.ca-body { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+.ca-resources { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.ca-res { background: rgba(248,113,113,0.06); border-radius: 10px; padding: 8px 14px; font-size: 0.78rem; font-weight: 700; color: var(--text); }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--dim); }
+.empty-state .es-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.85rem; font-weight: 600; }
+
+/* ── LOADING SPINNER ── */
+.spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── STATUS BAR ── */
+.status-strip {
+  padding: 6px 28px; background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 20px; flex-shrink: 0;
+}
+.ss-item { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 700; color: var(--muted); font-family: 'DM Mono', monospace; }
+.ss-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.ss-dot.warn { background: var(--yellow); }
+.ss-dot.err { background: var(--red); }
+
+/* ── SCROLLBARS ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+  .signals-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+
+<div class="shell">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🌊</div>
+      <div>
+        <div class="brand-text">Surfin<span>'</span></div>
+        <span class="brand-badge">Admin Console</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Analytics</div>
+      <button class="nav-btn active" onclick="showPanel('overview', this)">
+        <span class="nb-icon">📊</span> Overview
+        <span class="nb-dot" style="background:var(--teal);border-radius:50%;width:7px;height:7px;margin-left:auto;animation:livePulse 2s infinite;"></span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('users', this)">
+        <span class="nb-icon">👥</span> Users
+        <span class="nb-badge" id="users-badge">—</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('entries', this)">
+        <span class="nb-icon">📓</span> Entry Log
+      </button>
+      <button class="nav-btn" onclick="showPanel('drift', this)">
+        <span class="nb-icon">📈</span> Drift Analysis
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Safety</div>
+      <button class="nav-btn" onclick="showPanel('crisis', this)">
+        <span class="nb-icon">🚨</span> Crisis Alerts
+        <span class="nb-badge" id="crisis-badge" style="background:var(--red);display:none">!</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">System</div>
+      <button class="nav-btn" onclick="showPanel('ml', this)">
+        <span class="nb-icon">🧠</span> ML Pipeline
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sf-row">
+        <div class="sf-avatar">A</div>
+        <div><div class="sf-name">Admin</div><div class="sf-role">Surfin Team · Ajmer</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="topbar-title">Overview</h1>
+        <p id="topbar-sub">Real-time emotion analytics from the Surfin platform</p>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-chip"><span class="live-dot"></span> Live</div>
+        <select class="tb-user-select" id="user-filter" onchange="onUserChange()">
+          <option value="">All Users</option>
+        </select>
+        <button class="tb-refresh" onclick="loadAll()">⟳ Refresh</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="content">
+
+      <!-- ── OVERVIEW PANEL ── -->
+      <div class="panel active" id="panel-overview">
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent:var(--teal)">
+            <div class="kpi-icon">📝</div>
+            <div class="kpi-label">Total Entries</div>
+            <div class="kpi-value" id="kpi-entries">—</div>
+            <div class="kpi-sub">across all users</div>
+          </div>
+          <div class="kpi-card" style="--accent:var(--blue)">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-label">Active Users</div>
+            <div class="kpi-value" id="kpi-users">—</div>
+            <div class="kpi-sub">registered this session</div>
+          </div>
+          <div class="kpi-card" style="--accent:var(--green)">
+            <div class="kpi-icon">🌊</div>
+            <div class="kpi-label">Avg Valence</div>
+            <div class="kpi-value" id="kpi-valence">—</div>
+            <div class="kpi-sub">platform mood score</div>
+          </div>
+          <div class="kpi-card" style="--accent:var(--red)">
+            <div class="kpi-icon">🚨</div>
+            <div class="kpi-label">Crisis Triggers</div>
+            <div class="kpi-value" id="kpi-crisis">0</div>
+            <div class="kpi-sub">SOS events logged</div>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="cc-title">Valence Timeline · Platform Mood</div>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="valence-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card" style="display:flex;flex-direction:column;align-items:center;overflow:hidden;">
+            <div class="cc-title" style="width:100%">Emotion Distribution</div>
+            <div style="width:180px;height:180px;flex-shrink:0;position:relative;">
+              <canvas id="emotion-donut" width="180" height="180" style="width:180px!important;height:180px!important;"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- DRIFT + EMOTION BREAKDOWN ROW -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="drift-display">
+            <div class="cc-title" style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:800;font-family:'DM Mono',monospace;">
+              Drift Detection · Selected User
+            </div>
+            <div class="drift-meter-wrap">
+              <div class="drift-meter-fill" id="drift-fill" style="width:4%;background:linear-gradient(90deg,#34d399,#3ecfb2)"></div>
+            </div>
+            <div class="drift-ticks"><span>Normal</span><span>Mild</span><span>Moderate</span><span>Severe</span></div>
+            <div class="drift-badge" id="drift-badge" style="background:rgba(52,211,153,0.1);color:#34d399">✅ NORMAL</div>
+            <div class="drift-message" id="drift-msg">Select a user to see their drift analysis.</div>
+            <div class="drift-action" id="drift-action"></div>
+          </div>
+
+          <div class="chart-card">
+            <div class="cc-title">Latest Emotion Scores</div>
+            <div class="emo-grid" id="emotion-bars">
+              <div class="empty-state" style="padding:16px"><p>Submit a journal entry to see emotion scores.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRISIS ALERT -->
+        <div class="crisis-alert" id="crisis-panel" style="display:none;">
+          <div class="ca-title">🚨 Crisis Language Detected</div>
+          <div class="ca-body" id="crisis-body">High-distress signals were identified. Please follow up with the user immediately.</div>
+          <div class="ca-resources">
+            <div class="ca-res">📞 iCall India — 9152987821</div>
+            <div class="ca-res">📞 Vandrevala Foundation — 1860-2662-345 (24/7)</div>
+            <div class="ca-res">📞 NIMHANS — 080-46110007</div>
+          </div>
+        </div>
+
+        <!-- RECENT ENTRIES -->
+        <div>
+          <div class="section-head">
+            <h3>📋 Recent Entries</h3>
+            <span class="sh-sub" id="entries-count-label">—</span>
+          </div>
+          <div class="log-list" id="recent-log">
+            <div class="empty-state"><div class="es-icon">📭</div><p>No entries yet. Open mobile.html and start journaling.</p></div>
+          </div>
+        </div>
+      </div><!-- /overview panel -->
+
+      <!-- ── USERS PANEL ── -->
+      <div class="panel" id="panel-users">
+        <div class="section-head">
+          <h3>👥 All Users</h3>
+          <span class="sh-sub">Sorted by last activity</span>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head">
+            <span>User</span>
+            <span>Entries</span>
+            <span>Avg Valence</span>
+            <span>Top Emotion</span>
+            <span>Drift</span>
+            <span>Risk Level</span>
+          </div>
+          <div id="users-table-body">
+            <div class="empty-state" style="padding:30px"><div class="es-icon">👥</div><p>No users found. Connect backend and refresh.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ENTRIES PANEL ── -->
+      <div class="panel" id="panel-entries">
+        <div class="section-head">
+          <h3>📓 Full Entry Log</h3>
+          <span class="sh-sub" id="full-log-label">—</span>
+        </div>
+        <div class="log-list" id="full-log">
+          <div class="empty-state"><div class="es-icon">📭</div><p>No entries yet.</p></div>
+        </div>
+      </div>
+
+      <!-- ── DRIFT PANEL ── -->
+      <div class="panel" id="panel-drift">
+        <div class="section-head">
+          <h3>📈 Drift Analysis</h3>
+          <span class="sh-sub">Multi-signal emotional drift per user</span>
+        </div>
+
+        <div class="drift-display">
+          <div class="cc-title" style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:800;font-family:'DM Mono',monospace;">
+            Composite Drift Score
+          </div>
+          <div class="drift-meter-wrap">
+            <div class="drift-meter-fill" id="drift-fill-2" style="width:4%;background:linear-gradient(90deg,#34d399,#3ecfb2)"></div>
+          </div>
+          <div class="drift-ticks"><span>Normal</span><span>Mild</span><span>Moderate</span><span>Severe</span></div>
+          <div class="drift-badge" id="drift-badge-2" style="background:rgba(52,211,153,0.1);color:#34d399">✅ NORMAL</div>
+          <div class="drift-message" id="drift-msg-2" style="margin-top:10px">Select a user from the filter above.</div>
+        </div>
+
+        <div>
+          <div class="section-head"><h3>🔍 Signal Breakdown</h3></div>
+          <div class="signals-grid" id="signals-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CRISIS PANEL ── -->
+      <div class="panel" id="panel-crisis">
+        <div class="section-head">
+          <h3>🚨 Crisis Monitoring</h3>
+          <span class="sh-sub">Real-time SOS signal log</span>
+        </div>
+        <div id="crisis-log-list">
+          <div class="empty-state"><div class="es-icon">✅</div><p>No crisis events detected. All users appear safe.</p></div>
+        </div>
+      </div>
+
+      <!-- ── ML PIPELINE PANEL ── -->
+      <div class="panel" id="panel-ml">
+        <div class="section-head">
+          <h3>🧠 ML Pipeline Status</h3>
+          <span class="sh-sub">Emotion classifier · Drift detector · Crisis detector</span>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent:var(--teal)">
+            <div class="kpi-icon">🤖</div>
+            <div class="kpi-label">Classifier</div>
+            <div class="kpi-value" id="ml-status" style="font-size:1rem;color:var(--muted)">Checking…</div>
+            <div class="kpi-sub">j-hartmann/distilroberta</div>
+          </div>
+          <div class="kpi-card" style="--accent:var(--blue)">
+            <div class="kpi-icon">📊</div>
+            <div class="kpi-label">Analyses Run</div>
+            <div class="kpi-value" id="ml-analyses">—</div>
+            <div class="kpi-sub">total ML calls</div>
+          </div>
+          <div class="kpi-card" style="--accent:var(--purple)">
+            <div class="kpi-icon">🎯</div>
+            <div class="kpi-label">Emotions Tracked</div>
+            <div class="kpi-value">7</div>
+            <div class="kpi-sub">anger · disgust · fear · joy · neutral · sadness · surprise</div>
+          </div>
+          <div class="kpi-card" style="--accent:var(--yellow)">
+            <div class="kpi-icon">🛡️</div>
+            <div class="kpi-label">Crisis Layers</div>
+            <div class="kpi-value">2</div>
+            <div class="kpi-sub">pattern + ML scoring</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="cc-title">Emotion Model Valence Map</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0;">
+            <div style="flex:1;min-width:120px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:12px;padding:14px;text-align:center">
+              <div style="font-size:1.4rem">😊</div>
+              <div style="font-size:0.7rem;color:var(--green);font-weight:800;margin-top:4px">Joy</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace">+1.00</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center">
+              <div style="font-size:1.4rem">😮</div>
+              <div style="font-size:0.7rem;color:var(--yellow);font-weight:800;margin-top:4px">Surprise</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace">+0.30</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:rgba(139,148,158,0.08);border:1px solid rgba(139,148,158,0.2);border-radius:12px;padding:14px;text-align:center">
+              <div style="font-size:1.4rem">😐</div>
+              <div style="font-size:0.7rem;color:var(--muted);font-weight:800;margin-top:4px">Neutral</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace">0.00</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:rgba(123,104,238,0.08);border:1px solid rgba(123,104,238,0.2);border-radius:12px;padding:14px;text-align:center">
+              <div style="font-size:1.4rem">😰</div>
+              <div style="font-size:0.7rem;color:var(--purple);font-weight:800;margin-top:4px">Fear</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace">-0.80</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:12px;padding:14px;text-align:center">
+              <div style="font-size:1.4rem">🤢</div>
+              <div style="font-size:0.7rem;color:var(--red);font-weight:800;margin-top:4px">Disgust</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace">-0.90</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:rgba(74,158,255,0.08);border:1px solid rgba(74,158,255,0.2);border-radius:12px;padding:14px;text-align:center">
+              <div style="font-size:1.4rem">😢</div>
+              <div style="font-size:0.7rem;color:var(--blue);font-weight:800;margin-top:4px">Sadness</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace">-0.90</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);border-radius:12px;padding:14px;text-align:center">
+              <div style="font-size:1.4rem">😠</div>
+              <div style="font-size:0.7rem;color:var(--pink);font-weight:800;margin-top:4px">Anger</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace">-1.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- STATUS STRIP -->
+    <div class="status-strip">
+      <div class="ss-item"><div class="ss-dot" id="backend-dot"></div> Backend <span id="backend-status" style="color:var(--dim)">Connecting…</span></div>
+      <div class="ss-item"><div class="ss-dot warn" id="ml-dot"></div> ML <span id="ml-status-strip" style="color:var(--dim)">Unknown</span></div>
+      <div class="ss-item" style="margin-left:auto;font-size:0.65rem;color:var(--dim)" id="last-updated">Last updated: —</div>
+    </div>
+  </div><!-- /main -->
+
+</div><!-- /shell -->
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const BACKEND = 'http://localhost:5000';
+const POLL_INTERVAL = 10000; // ms
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let allData = {};           // { user_id: { entries: [], summary: {} } }
+let crisisLog = [];
+let valenceHistory = [];
+let selectedUser = '';
+let backendOnline = false;
+let mlLive = false;
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+const panelTitles = {
+  overview: ['Overview', 'Real-time emotion analytics from the Surfin platform'],
+  users:    ['Users', 'All registered users and their wellness summaries'],
+  entries:  ['Entry Log', 'Complete chronological journal entry history'],
+  drift:    ['Drift Analysis', 'Multi-signal emotional drift detection'],
+  crisis:   ['Crisis Alerts', 'SOS events and high-risk language detection'],
+  ml:       ['ML Pipeline', 'Emotion classifier model info and configuration'],
+};
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const [title, sub] = panelTitles[name] || [name, ''];
+  document.getElementById('topbar-title').textContent = title;
+  document.getElementById('topbar-sub').textContent = sub;
+}
+
+// ─── USER FILTER ─────────────────────────────────────────────────────────────
+function populateUserFilter(users) {
+  const sel = document.getElementById('user-filter');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All Users</option>';
+  users.forEach(uid => {
+    const opt = document.createElement('option');
+    opt.value = uid;
+    opt.textContent = uid.replace('user_','').replace(/_/g,' ');
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+function onUserChange() {
+  selectedUser = document.getElementById('user-filter').value;
+  renderAll();
+}
+
+// ─── FETCH HELPERS ────────────────────────────────────────────────────────────
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function loadAll() {
+  document.getElementById('last-updated').textContent = 'Last updated: refreshing…';
+  try {
+    await loadKnownUsers();
+    backendOnline = true;
+    setBackendStatus(true);
+  } catch(e) {
+    console.warn('Backend load error:', e.message);
+    backendOnline = false;
+    setBackendStatus(false);
+  }
+  document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+}
+
+async function loadKnownUsers() {
+  try {
+    const data = await fetchJSON(`${BACKEND}/api/users`);
+    for (const uid of data.users) {
+      try {
+        const hist = await fetchJSON(`${BACKEND}/api/history?user_id=${uid}`);
+        if (hist?.entries) {
+          allData[uid] = { entries: hist.entries };
+          try {
+            const sum = await fetchJSON(`${BACKEND}/api/summary?user_id=${uid}`);
+            allData[uid].summary = sum;
+          } catch(e) {}
+        }
+      } catch(e) {}
+    }
+    renderAll();
+  } catch(e) {}
+}
+
+// ─── RENDER ALL ──────────────────────────────────────────────────────────────
+function renderAll() {
+  const users = Object.keys(allData);
+  populateUserFilter(users);
+  document.getElementById('users-badge').textContent = users.length || '0';
+
+  // Collect entries
+  let allEntries = [];
+  users.forEach(uid => {
+    const entries = allData[uid]?.entries || [];
+    entries.forEach(e => { allEntries.push({...e, _uid: uid}); });
+  });
+  allEntries.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  // Filter by selected user
+  const filtered = selectedUser
+    ? allEntries.filter(e => e._uid === selectedUser)
+    : allEntries;
+
+  // KPIs
+  document.getElementById('kpi-entries').textContent = filtered.length;
+  document.getElementById('kpi-users').textContent = users.length;
+  document.getElementById('entries-count-label').textContent = filtered.length + ' entries total';
+
+  const valences = filtered.map(e => e.valence).filter(v => v !== undefined);
+  const avgVal = valences.length ? (valences.reduce((a,b)=>a+b,0) / valences.length).toFixed(2) : '—';
+  const kpiV = document.getElementById('kpi-valence');
+  kpiV.textContent = avgVal;
+  kpiV.style.color = avgVal > 0 ? 'var(--green)' : avgVal < 0 ? 'var(--red)' : 'var(--text)';
+
+  // Crisis count
+  const crisisCount = filtered.filter(e => e.sos_trigger || e.risk_level === 'CRISIS').length;
+  document.getElementById('kpi-crisis').textContent = crisisCount;
+  const crisisPanel = document.getElementById('crisis-panel');
+  const crisisBadge = document.getElementById('crisis-badge');
+  if (crisisCount > 0) {
+    crisisBadge.style.display = 'inline';
+    crisisPanel.style.display = 'block';
+  } else {
+    crisisBadge.style.display = 'none';
+    crisisPanel.style.display = 'none';
+  }
+
+  // ML status
+  const hasMlData = filtered.some(e => !e.demo_mode);
+  mlLive = hasMlData;
+  document.getElementById('ml-status-strip').textContent = hasMlData ? 'LIVE' : 'DEMO';
+  document.getElementById('ml-status-strip').style.color = hasMlData ? 'var(--green)' : 'var(--yellow)';
+  document.getElementById('ml-dot').className = 'ss-dot ' + (hasMlData ? '' : 'warn');
+  document.getElementById('ml-status').textContent = hasMlData ? '🟢 LIVE' : '🟡 DEMO MODE';
+  document.getElementById('ml-analyses').textContent = filtered.length;
+
+  // Valence chart
+  valenceHistory = filtered.slice().reverse().map(e => ({
+    v: e.valence, t: new Date(e.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+  }));
+  drawValenceChart();
+
+  // Emotion donut
+  const emotionCounts = {};
+  filtered.forEach(e => {
+    if (e.top_emotion) emotionCounts[e.top_emotion] = (emotionCounts[e.top_emotion] || 0) + 1;
+  });
+  drawEmotionDonut(emotionCounts);
+
+  // Latest entry emotion bars
+  const latest = filtered[0];
+  if (latest && latest.all_scores && Object.keys(latest.all_scores).length) {
+    renderEmotionBars(latest.all_scores);
+  }
+
+  // Drift from latest entry
+  if (latest) {
+    renderDrift(latest.drift_score || 0, latest.drift_level || 'NORMAL', latest.drift_message, latest.drift_action);
+  }
+
+  // Recent log
+  renderRecentLog(filtered.slice(0, 20));
+
+  // Full log
+  renderFullLog(filtered);
+
+  // Users table
+  renderUsersTable(users);
+
+  // Crisis log
+  renderCrisisLog(filtered.filter(e => e.sos_trigger || e.risk_level === 'CRISIS'));
+
+  // Signals panel
+  if (latest) renderSignals(latest);
+}
+
+// ─── RENDER HELPERS ──────────────────────────────────────────────────────────
+const emoConf = {
+  joy:      {color:'#34d399', label:'😊 Joy'},
+  sadness:  {color:'#4a9eff', label:'😢 Sadness'},
+  fear:     {color:'#7b68ee', label:'😰 Fear'},
+  anger:    {color:'#f87171', label:'😠 Anger'},
+  disgust:  {color:'#f472b6', label:'🤢 Disgust'},
+  surprise: {color:'#fbbf24', label:'😮 Surprise'},
+  neutral:  {color:'#8b949e', label:'😐 Neutral'},
+};
+
+function renderEmotionBars(scores) {
+  const grid = document.getElementById('emotion-bars');
+  grid.innerHTML = Object.entries(emoConf).map(([key, conf]) => {
+    const score = scores[key] || 0;
+    const pct = Math.round(score * 100);
+    return `<div class="emo-row">
+      <span class="er-label">${conf.label}</span>
+      <div class="er-track"><div class="er-fill" style="width:${pct}%;background:${conf.color}"></div></div>
+      <span class="er-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderDrift(score, level, msg, action) {
+  const pct = Math.min(score * 100, 100);
+  const cfg = {
+    'NORMAL':        {color:'linear-gradient(90deg,#34d399,#3ecfb2)', bg:'rgba(52,211,153,0.1)', text:'#34d399', icon:'✅', label:'NORMAL'},
+    'MILD_DRIFT':    {color:'linear-gradient(90deg,#fbbf24,#f59e0b)', bg:'rgba(251,191,36,0.1)',  text:'#fbbf24', icon:'🟡', label:'MILD DRIFT'},
+    'MODERATE_DRIFT':{color:'linear-gradient(90deg,#f97316,#ea580c)', bg:'rgba(249,115,22,0.1)',  text:'#f97316', icon:'🔶', label:'MODERATE DRIFT'},
+    'SEVERE_DRIFT':  {color:'linear-gradient(90deg,#f87171,#ef4444)', bg:'rgba(248,113,113,0.1)', text:'#f87171', icon:'🔴', label:'SEVERE DRIFT'},
+  };
+  // Normalise level keys (backend returns NORMAL, MILD_DRIFT etc)
+  const c = cfg[level] || cfg['NORMAL'];
+  ['drift-fill','drift-fill-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.width = Math.max(pct, 3) + '%'; el.style.background = c.color; }
+  });
+  ['drift-badge','drift-badge-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.background = c.bg; el.style.color = c.text; el.textContent = `${c.icon} ${c.label} — ${(score*100).toFixed(1)}%`; }
+  });
+  const msgEl = document.getElementById('drift-msg'); if (msgEl && msg) msgEl.textContent = msg;
+  const msgEl2 = document.getElementById('drift-msg-2'); if (msgEl2 && msg) msgEl2.textContent = msg;
+  const actEl = document.getElementById('drift-action'); if (actEl && action) actEl.textContent = '→ ' + action;
+}
+
+function renderRecentLog(entries) {
+  const el = document.getElementById('recent-log');
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><p>No entries yet.</p></div>'; return; }
+  el.innerHTML = entries.map(e => logItemHTML(e)).join('');
+}
+
+function renderFullLog(entries) {
+  const el = document.getElementById('full-log');
+  document.getElementById('full-log-label').textContent = entries.length + ' entries';
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><p>No entries.</p></div>'; return; }
+  el.innerHTML = entries.map(e => logItemHTML(e)).join('');
+}
+
+function logItemHTML(e) {
+  const riskColor = {'SAFE':'#34d399','LOW_RISK':'#fbbf24','HIGH_RISK':'#f97316','CRISIS':'#f87171'}[e.risk_level] || '#8b949e';
+  const emoColor = emoConf[e.top_emotion]?.color || '#8b949e';
+  const time = e.timestamp ? new Date(e.timestamp).toLocaleString('en-IN',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '—';
+  const preview = (e.text||'').substring(0,80) + ((e.text||'').length > 80 ? '…' : '');
+  return `<div class="log-item">
+    <div class="log-dot" style="background:${emoColor}"></div>
+    <div class="log-text">
+      <strong>${e._uid || e.user_id || 'user'}</strong> · ${e.top_emotion || '—'} (${((e.top_score||0)*100).toFixed(0)}%) · valence <span style="color:${e.valence>=0?'var(--green)':'var(--red)'}">${(e.valence||0).toFixed(2)}</span>
+      ${preview ? `<br><span style="font-size:0.73rem;color:var(--dim)">"${preview}"</span>` : ''}
+    </div>
+    <div class="log-meta">${time}<br><span class="risk-pill risk-${(e.risk_level||'safe').toLowerCase().replace('_','-')}">${e.risk_level||'SAFE'}</span></div>
+  </div>`;
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('users-table-body');
+  if (!users.length) { tbody.innerHTML = '<div class="empty-state" style="padding:30px"><p>No users yet.</p></div>'; return; }
+  tbody.innerHTML = users.map(uid => {
+    const entries = allData[uid]?.entries || [];
+    const sum = allData[uid]?.summary || {};
+    const avgV = sum.avg_valence !== undefined ? sum.avg_valence.toFixed(2) : '—';
+    const domEmo = sum.dominant_emotion || entries[entries.length-1]?.top_emotion || '—';
+    const lastEntry = entries[entries.length-1] || {};
+    const drift = lastEntry.drift_level || '—';
+    const risk = lastEntry.risk_level || 'SAFE';
+    const riskClass = {'SAFE':'risk-safe','LOW_RISK':'risk-low','HIGH_RISK':'risk-high','CRISIS':'risk-crisis'}[risk] || 'risk-safe';
+    const initial = uid.replace('user_','')[0]?.toUpperCase() || 'U';
+    return `<div class="table-row" onclick="document.getElementById('user-filter').value='${uid}';onUserChange()">
+      <div class="tr-name"><div class="tr-avatar">${initial}</div>${uid.replace('user_','').replace(/_/g,' ')}</div>
+      <div class="tr-cell">${entries.length}</div>
+      <div class="tr-cell" style="color:${avgV>0?'var(--green)':avgV<0?'var(--red)':'var(--muted)'}">${avgV}</div>
+      <div class="tr-cell">${(emoConf[domEmo]?.label || domEmo)}</div>
+      <div class="tr-cell">${drift}</div>
+      <div><span class="risk-pill ${riskClass}">${risk}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderCrisisLog(entries) {
+  const el = document.getElementById('crisis-log-list');
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="es-icon">✅</div><p>No crisis events. All users appear safe.</p></div>'; return; }
+  el.innerHTML = `<div style="margin-bottom:12px">
+    <div class="crisis-alert visible" style="display:block">
+      <div class="ca-title">🚨 ${entries.length} Crisis Event${entries.length>1?'s':''} Detected</div>
+      <div class="ca-body">These users triggered SOS or high-risk language detection. Please follow up immediately.</div>
+      <div class="ca-resources"><div class="ca-res">📞 iCall India — 9152987821</div><div class="ca-res">📞 Vandrevala Foundation — 1860-2662-345</div></div>
+    </div>
+  </div>` + entries.map(e => logItemHTML(e)).join('');
+}
+
+function renderSignals(entry) {
+  const grid = document.getElementById('signals-grid');
+  const signals = [
+    {name:'Valence Dev', val: entry.valence?.toFixed(2)||'—', ok: (entry.valence||0) > -0.3},
+    {name:'Neg Ratio',   val: entry.negative_ratio?.toFixed(2)||'—', ok: (entry.negative_ratio||0) < 0.5},
+    {name:'Top Emotion', val: entry.top_emotion||'—', ok: !['fear','sadness','anger','disgust'].includes(entry.top_emotion)},
+    {name:'Risk Level',  val: entry.risk_level||'SAFE', ok: entry.risk_level === 'SAFE'},
+    {name:'Drift Level', val: entry.drift_level||'NORMAL', ok: entry.drift_level === 'NORMAL'},
+    {name:'SOS Trigger', val: entry.sos_trigger ? 'YES ⚠️' : 'No', ok: !entry.sos_trigger},
+  ];
+  grid.innerHTML = signals.map(s => `<div class="signal-card ${s.ok?'ok':'triggered'}">
+    <div class="sc-name">${s.name}</div>
+    <div class="sc-val" style="color:${s.ok?'var(--green)':'var(--red)'}">${s.val}</div>
+    <div class="sc-status" style="color:${s.ok?'var(--green)':'var(--red)'}">${s.ok?'✅ Normal':'⚠️ Flagged'}</div>
+  </div>`).join('');
+}
+
+// ─── CANVAS CHARTS ────────────────────────────────────────────────────────────
+function drawValenceChart() {
+  const canvas = document.getElementById('valence-chart');
+  if (!canvas) return;
+  const w = canvas.offsetWidth || 400, h = 180;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+
+  const pts = valenceHistory;
+  if (pts.length < 2) {
+    ctx.fillStyle = '#4a5568'; ctx.font = '13px Nunito';
+    ctx.textAlign = 'center';
+    ctx.fillText('Journal entries will appear here', w/2, h/2);
+    return;
+  }
+
+  const mid = h * 0.55;
+  const step = w / (pts.length - 1);
+
+  // Zero line
+  ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(w, mid);
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(62,207,178,0.25)');
+  grad.addColorStop(1, 'rgba(62,207,178,0.02)');
+
+  ctx.beginPath();
+  pts.forEach((p,i) => {
+    const x = i * step, y = mid - (p.v * (h*0.38));
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.lineTo((pts.length-1)*step, h); ctx.lineTo(0, h); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  pts.forEach((p,i) => {
+    const x = i * step, y = mid - (p.v * (h*0.38));
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = '#3ecfb2'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+
+  // Dots + labels
+  pts.forEach((p,i) => {
+    const x = i * step, y = mid - (p.v * (h*0.38));
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2);
+    ctx.fillStyle = p.v >= 0 ? '#34d399' : '#f87171'; ctx.fill();
+    if (i === 0 || i === pts.length-1) {
+      ctx.fillStyle = '#8b949e'; ctx.font = '10px DM Mono'; ctx.textAlign = i === 0 ? 'left' : 'right';
+      ctx.fillText(p.t, x, h - 4);
+    }
+  });
+}
+
+function drawEmotionDonut(counts) {
+  const canvas = document.getElementById('emotion-donut');
+  if (!canvas) return;
+  const size = 180;
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,size,size);
+
+  const total = Object.values(counts).reduce((a,b)=>a+b, 0);
+  if (!total) {
+    ctx.fillStyle = '#4a5568'; ctx.font = '11px Nunito';
+    ctx.textAlign = 'center'; ctx.fillText('No data', size/2, size/2);
+    return;
+  }
+
+  const cx = size/2, cy = size/2, r = size * 0.38, innerR = size * 0.22;
+  let angle = -Math.PI/2;
+  const colors = Object.keys(emoConf).map(k => emoConf[k].color);
+  let ci = 0;
+  Object.entries(counts).forEach(([emo, count]) => {
+    const slice = (count / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle + slice);
+    ctx.closePath();
+    ctx.fillStyle = emoConf[emo]?.color || colors[ci % colors.length];
+    ctx.fill();
+    angle += slice; ci++;
+  });
+  // Inner hole
+  ctx.beginPath(); ctx.arc(cx, cy, innerR, 0, Math.PI*2);
+  ctx.fillStyle = '#0e1520'; ctx.fill();
+  // Center text
+  ctx.fillStyle = '#e2e8f0'; ctx.font = `bold ${Math.round(size*0.09)}px Syne`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(total, cx, cy - size*0.04);
+  ctx.font = `${Math.round(size*0.065)}px Nunito`; ctx.fillStyle = '#8b949e';
+  ctx.fillText('entries', cx, cy + size*0.06);
+}
+
+// ─── BACKEND STATUS ───────────────────────────────────────────────────────────
+function setBackendStatus(online) {
+  const dot = document.getElementById('backend-dot');
+  const status = document.getElementById('backend-status');
+  dot.className = 'ss-dot' + (online ? '' : ' err');
+  status.textContent = online ? 'Connected' : 'Offline — running in demo mode';
+  status.style.color = online ? 'var(--green)' : 'var(--red)';
+}
+
+// ─── DEMO DATA (when backend is offline) ─────────────────────────────────────
+function loadDemoData() {
+  const emotions = ['joy','sadness','fear','anger','neutral','surprise'];
+  const demoUsers = ['user_aisha', 'user_rohan', 'user_priya'];
+  demoUsers.forEach(uid => {
+    const n = 4 + Math.floor(Math.random() * 6);
+    const entries = Array.from({length: n}, (_, i) => {
+      const emo = emotions[Math.floor(Math.random() * emotions.length)];
+      const v = +(Math.random() * 1.6 - 0.8).toFixed(3);
+      return {
+        user_id: uid, _uid: uid,
+        top_emotion: emo, top_score: +(0.6 + Math.random()*0.35).toFixed(3),
+        valence: v, negative_ratio: +(Math.abs(v) * 0.8).toFixed(3),
+        all_scores: Object.fromEntries(emotions.map(e => [e, +(Math.random()*0.4).toFixed(3)])),
+        drift_level: ['NORMAL','NORMAL','NORMAL','MILD_DRIFT','MODERATE_DRIFT'][Math.floor(Math.random()*5)],
+        drift_score: +(Math.random()*0.4).toFixed(3),
+        risk_level: 'SAFE', sos_trigger: false,
+        timestamp: new Date(Date.now() - i * 3600000 * 4).toISOString(),
+        text: `Demo entry #${i+1} for ${uid}. Feeling ${emo} today.`,
+        demo_mode: true,
+      };
+    });
+    allData[uid] = { entries, summary: { avg_valence: +(entries.reduce((s,e)=>s+e.valence,0)/entries.length).toFixed(3), dominant_emotion: entries[0].top_emotion, baseline_stable: n >= 7 } };
+  });
+  renderAll();
+}
+
+// ─── PROBE BACKEND (auto-discover users) ─────────────────────────────────────
+async function probeBackend() {
+  try {
+    const r = await fetch(BACKEND + '/api/users', {signal: AbortSignal.timeout(3000)});
+    if (!r.ok) throw new Error('bad response');
+    const data = await r.json();
+    backendOnline = true;
+    setBackendStatus(true);
+    for (const uid of data.users) {
+      try {
+        const hist = await fetchJSON(`${BACKEND}/api/history?user_id=${uid}`);
+        if (hist?.entries) {
+          allData[uid] = { entries: hist.entries };
+          try {
+            const sum = await fetchJSON(`${BACKEND}/api/summary?user_id=${uid}`);
+            allData[uid].summary = sum;
+          } catch(e) {}
+        }
+      } catch(e) {}
+    }
+    renderAll();
+  } catch(e) {
+    backendOnline = false;
+    setBackendStatus(false);
+    loadDemoData();
+  }
+}
+
+// ─── LIVE POLLING (register new users/entries) ────────────────────────────────
+async function pollNewEntries() {
+  if (!backendOnline) return;
+  try {
+    const data = await fetchJSON(`${BACKEND}/api/users`);
+    let changed = false;
+    for (const uid of data.users) {
+      try {
+        const hist = await fetchJSON(`${BACKEND}/api/history?user_id=${uid}`);
+        if (hist?.entries && hist.entries.length !== (allData[uid]?.entries?.length || 0)) {
+          allData[uid] = { ...allData[uid], entries: hist.entries };
+          changed = true;
+        }
+      } catch(e) {}
+    }
+    if (changed) {
+      renderAll();
+      document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+    }
+  } catch(e) {}
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  probeBackend();
+  setInterval(pollNewEntries, POLL_INTERVAL);
+  setInterval(() => {
+    if (backendOnline) document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+  }, POLL_INTERVAL);
+  window.addEventListener('resize', () => { drawValenceChart(); });
+});
+</script>
+</body>
+</html>
